@@ -1,0 +1,26 @@
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.rowTable {
+  display: flex;
+  flex-direction: row;
+}
+.cellItemTable {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+}
+.cellColumTable {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+.red {
+  background-color: red;
+}
+.white {
+  background-color: white;
+}
