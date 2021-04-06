@@ -33,8 +33,8 @@ export default function Table({
               onMouseDown={() => {
                 setIsMouseDown((prevState) => !prevState);
                 setStartPoints({
-                  startPoints: { day, hour },
-                  endPoints: { day, hour },
+                  day,
+                  hour,
                   isFree: !isFree,
                 });
               }}

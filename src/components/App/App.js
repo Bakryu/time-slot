@@ -17,19 +17,31 @@ function App() {
     const { day, hour, isFree } = startPoints;
     let startDay = day <= currentDay ? day : currentDay;
     const endDay = day >= currentDay ? day : currentDay;
+    // console.log(startDay, endDay);
     let startHour = hour <= currentHour ? hour : currentHour;
     const endHour = hour >= currentHour ? hour : currentHour;
-    let dayCount = 1;
+    let dayCount = 0;
+
     const newTableData = { ...tableData };
-    for (const dataItem in newTableData) {
-      if (startDay >= dayCount) {
+    let count = 0;
+    for (const key in newTableData) {
+      // console.log(startDay <= count && endDay >= count, "thet");
+      if (startDay <= count && endDay >= count) {
         for (startHour; startHour <= endHour; startHour++) {
-          newTableData[dataItem][startHour] = isFree;
-          console.log(startDay <= dayCount);
+          console.log(
+            startDay + "sd",
+            endDay + "ed",
+            startHour + "sh",
+            endHour + "eh",
+            count
+          );
+          newTableData[key][startHour] = isFree;
+          console.log(key);
         }
       }
-      ++dayCount;
+      ++count;
     }
+
     setTableData(newTableData);
   };
 
