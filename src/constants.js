@@ -1,29 +1,10 @@
-const createEmptyTable = () => {
-  const emptyTable = [];
-
-  for (let i = 0; i < 8; i++) {
-    const emptyRow = [];
-    for (let j = 1; j < 25; j++) {
-      if (i === 0) {
-        emptyRow.push(j);
-      } else {
-        emptyRow.push(null);
-      }
-    }
-    emptyTable.push(emptyRow);
-  }
-  return emptyTable;
-};
-
-const ARRAY_STRUCTURE_TABLE = createEmptyTable();
-const DAYS = [
-    null,
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+export const DAYS_COUNT = 24;
+export const DATA = [
+  { day: "monday", order: 0 },
+  { day: "tuesday", order: 1 },
+  { day: "wednesday", order: 2 },
+  { day: "thursday", order: 3 },
+  { day: "friday", order: 4 },
+  { day: "saturday", order: 5 },
+  { day: "sunday", order: 6 },
 ];
-export { DAYS, ARRAY_STRUCTURE_TABLE };

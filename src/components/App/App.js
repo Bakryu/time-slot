@@ -1,72 +1,162 @@
-import React, { useState } from "react";
-import { Button } from "react-bootstrap";
-import Table from "../Table";
-import defaultData from "../../services/getData";
+import React, { useState, useRef } from "react";
+import Day from "../Day";
+import { DATA } from "../../constants";
+import NavBar from "../NavBar";
+
 import "./app.css";
 
 function App() {
-  const [tableData, setTableData] = useState(defaultData);
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [startPoints, setStartPoints] = useState({
-    day: null,
-    hour: null,
-    isFree: true,
-  });
+  const [times, setTimes] = useState({});
+  const [multipleChoice, setMultipleChoice] = useState(false);
+  const [mouseDownValue, setMouseDownValue] = useState(null);
+  const isChosenDay = useRef(null);
 
-  const changeTableData = (currentDay, currentHour) => {
-    const { day, hour, isFree } = startPoints;
-    let startDay = day <= currentDay ? day : currentDay;
-    const endDay = day >= currentDay ? day : currentDay;
-    // console.log(startDay, endDay);
-    let startHour = hour <= currentHour ? hour : currentHour;
-    const endHour = hour >= currentHour ? hour : currentHour;
-    let dayCount = 0;
+  const handleMouseDown = (item, time) => {
+    setMultipleChoice(true);
+    handleClickSetTimes(item.day, time);
+    setMouseDownValue({ ...item, time });
+    isChosenDay.current = times[item.day]?.includes(time);
+  };
 
-    const newTableData = { ...tableData };
-    let count = 0;
-    for (const key in newTableData) {
-      // console.log(startDay <= count && endDay >= count, "thet");
-      if (startDay <= count && endDay >= count) {
-        for (startHour; startHour <= endHour; startHour++) {
-          console.log(
-            startDay + "sd",
-            endDay + "ed",
-            startHour + "sh",
-            endHour + "eh",
-            count
-          );
-          newTableData[key][startHour] = isFree;
-          console.log(key);
-        }
+  const handleMouseUp = () => {
+    setMultipleChoice(false);
+    setMouseDownValue(null);
+  };
+
+  const handleClickSetTimes = (dayOfWeek, time) =>
+    setTimes((state) => {
+      if (state[dayOfWeek]?.includes(time)) {
+        return {
+          ...state,
+          [dayOfWeek]: state[dayOfWeek].filter((item) => item !== time),
+        };
       }
-      ++count;
-    }
 
-    setTableData(newTableData);
-  };
+      if (state[dayOfWeek]) {
+        return { ...state, [dayOfWeek]: [...state[dayOfWeek], time] };
+      }
 
-  const toggleCell = (row, column) => {
-    setTableData((prevState) => {
-      const currentRow = [...prevState[row]];
-      currentRow[column] = !currentRow[column];
-      return { ...prevState, [row]: currentRow };
+      return { ...state, [dayOfWeek]: [time] };
     });
+
+  const handleMoveSetTimes = (item, time) => {
+    const firstPoint = mouseDownValue;
+    const secondPoint = { ...item, time };
+    if (isChosenDay.current) {
+      return setTimes((state) => resetTimes(state, firstPoint, secondPoint));
+    }
+    setTimes((state) => setTime(state, firstPoint, secondPoint));
   };
-  // console.log(controlPoints, isMouseDown);
+
   return (
-    <div className="App">
-      <Table
-        tableData={tableData}
-        toggleCell={toggleCell}
-        isMouseDown={isMouseDown}
-        setIsMouseDown={setIsMouseDown}
-        startPoints={startPoints}
-        setStartPoints={setStartPoints}
-        changeTableData={changeTableData}
-      />
-      <Button variant="primary">Primary</Button>
-    </div>
+    <>
+      <NavBar />
+      <div className="container-fluid">
+        <h1 className="py-3">Please select time slot</h1>
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th
+                scope="row"
+                style={{ minWidth: "150px", maxWidth: "150px" }}
+              ></th>
+              {new Array(24).fill(1).map((item, ind) => {
+                return (
+                  <th
+                    className="text-center"
+                    key={ind}
+                    style={{ minWidth: "41px", maxWidth: "41px" }}
+                  >
+                    {ind + 1}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {DATA.map((item) => {
+              return (
+                <tr key={item.day}>
+                  <th
+                    scope="row"
+                    style={{ minWidth: "150px", maxWidth: "150px" }}
+                  >
+                    {item.day}
+                  </th>
+                  <Day
+                    item={item}
+                    times={times}
+                    setMultipleChoice={setMultipleChoice}
+                    multipleChoice={multipleChoice}
+                    handleMoveSetTimes={handleMoveSetTimes}
+                    handleMouseDown={handleMouseDown}
+                    handleMouseUp={handleMouseUp}
+                  />
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
 export default App;
+
+function getCycleValues(firstPoint, secondPoint, field) {
+  const firstLessTime = firstPoint[field] < secondPoint[field];
+  let iter = firstLessTime ? firstPoint[field] : secondPoint[field];
+  const maxValue = firstLessTime ? secondPoint[field] : firstPoint[field];
+
+  return { iter, maxValue };
+}
+
+function getChosenHours(firstPoint, secondPoint) {
+  const chosenHours = [];
+
+  let { iter, maxValue } = getCycleValues(firstPoint, secondPoint, "time");
+
+  for (; iter <= maxValue; iter++) {
+    chosenHours.push(iter);
+  }
+
+  return chosenHours;
+}
+
+const setTime = (state, firstPoint, secondPoint) => {
+  const updatedState = { ...state };
+  const chosenHours = getChosenHours(firstPoint, secondPoint);
+
+  let { iter, maxValue } = getCycleValues(firstPoint, secondPoint, "order");
+
+  for (; iter <= maxValue; iter++) {
+    if (updatedState[DATA[iter].day]) {
+      updatedState[DATA[iter].day] = [
+        ...new Set([...updatedState[DATA[iter].day], ...chosenHours]),
+      ];
+    } else {
+      updatedState[DATA[iter].day] = chosenHours;
+    }
+  }
+
+  return updatedState;
+};
+
+const resetTimes = (state, firstPoint, secondPoint) => {
+  const updatedState = { ...state };
+  const chosenHours = getChosenHours(firstPoint, secondPoint);
+
+  let { iter, maxValue } = getCycleValues(firstPoint, secondPoint, "order");
+
+  for (; iter <= maxValue; iter++) {
+    if (updatedState[DATA[iter].day]) {
+      const updatedDays = updatedState[DATA[iter].day]?.filter(
+        (elem) => !chosenHours.includes(elem)
+      );
+      updatedState[DATA[iter].day] = updatedDays;
+    }
+  }
+
+  return updatedState;
+};
