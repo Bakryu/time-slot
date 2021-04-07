@@ -63,7 +63,7 @@ function App() {
               {new Array(24).fill(1).map((item, ind) => {
                 return (
                   <th
-                    className="text-center"
+                    className="text-center "
                     key={ind}
                     style={{ minWidth: "41px", maxWidth: "41px" }}
                   >
